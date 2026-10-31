@@ -62,41 +62,8 @@ Model comparison (5-fold CV): Gradient Boosting and Logistic Regression are almo
 
 **5. Threshold:** The model gives a probability. Lower threshold = more churners caught but more false alarms. This is a business decision.
 
----
 
-## Interview questions (on this project)
 
-**Q1. Explain this project (2 min).**
-Telecom churn prediction. I cleaned the data (fixed TotalCharges), did a stratified split, built a ColumnTransformer pipeline, compared 4 models with CV, tuned the best one, chose the threshold by F1, got ROC-AUC 0.85 and recall 0.74 on the test set, and deployed it in a Streamlit app.
-
-**Q2. Why didn't you use accuracy?**
-The data is imbalanced. A dummy model that says "stay" for everyone gets 73.5% accuracy but doesn't catch a single churner.
-
-**Q3. How did you prevent data leakage?**
-I split first, kept preprocessing inside a Pipeline (so in every CV fold it is fit only on the train part), chose the threshold on train out-of-fold predictions, and used the test set only once.
-
-**Q4. Why one-hot encoding? Why not label encoding?**
-Columns like Contract have no order. Label encoding (0,1,2) teaches the model a false order. One-hot gives each category its own 0/1 column.
-
-**Q5. Why scaling? Do tree models need it?**
-Logistic Regression is distance/gradient based, so features with large scales dominate. Tree-based models don't need scaling (they work on split comparisons).
-
-**Q6. How did you check for overfitting?**
-I compared the CV score with the test score (both ~0.85, no big gap). I limited `max_depth` in the Decision Tree and used regularization-type parameters in tuning.
-
-**Q7. Why did Random Forest do worse than GB?**
-With default settings, RF had low recall at the 0.5 threshold, and its AUC was also slightly lower. Tuning could have improved it. The truth is that boosting is often better on tabular data, but it differs from dataset to dataset.
-
-**Q8. How did you choose the threshold?**
-On train out-of-fold probabilities, I picked the threshold that maximizes F1 using the precision-recall curve. If business costs are known, I'd use a cost-based threshold.
-
-**Q9. How will the model be used in production? What problems will come up?**
-Save the pipeline and load it from an app/API. Problems: data drift (customer behaviour changes), new categories (that's why `handle_unknown="ignore"`), and the need for periodic retraining.
-
-**Q10. How would you improve it further?**
-Feature engineering (like charges per month, count of services), XGBoost/LightGBM, SMOTE or cost-sensitive learning, probability calibration, and explainability with SHAP.
-
----
 
 ## Practice (do it yourself, this is where coding skill comes from)
 1. Add a new feature in `train.py`: `df["num_services"]` (how many add-on services the customer has taken).
